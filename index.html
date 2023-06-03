@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+<body>
+    <h1>Приложения</h1>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Добавить приложение</button>
+    <table class="table">
+    <thead class="table-secondary">
+        <tr>
+        <th scope="col">id</th>
+        <th scope="col">Имя приложения</th>
+        <th scope="col">Alias</th>
+        <th scope="col">Политика</th>
+        <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+    </table>
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="exampleModalLabel">Новое приложение</h1>
+              <button type="button" class="btn-close sloseNew" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="basic-addon1">Имя приложения</span>
+                    <input type="text" class="form-control newName" placeholder="Имя приложения" aria-label="Username" aria-describedby="basic-addon1">
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="basic-addon1">Идентификатор</span>
+                    <input type="text" class="form-control newID" placeholder="Идентификатор" aria-label="Username" aria-describedby="basic-addon1">
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="basic-addon1">Политика</span>
+                    <input type="text" class="form-control newPolicy" placeholder="Политика" aria-label="Username" aria-describedby="basic-addon1">
+                </div>
+            </div>
+            <div class="modal-footer modal-footer-new">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+              <button type="button" class="btn btn-primary newSave">Сохранить</button>
+            </div>
+          </div>
+        </div>
+    </div>
+    <div class="modal fade" id="customize" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="customizeLabel">Изменить приложение</h1>
+              <button type="button" class="btn-close closeCustomize" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="customizeID">ID</span>
+                    <input type="text" class="form-control customizeID" aria-label="ID" aria-describedby="basic-addon1" readonly>
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="basic-addon1">Имя приложения</span>
+                    <input type="text" class="form-control customizeName" placeholder="Имя приложения" aria-label="Username" aria-describedby="basic-addon1">
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="basic-addon1">Политика</span>
+                    <input type="text" class="form-control customizePolicy" placeholder="Политика" aria-label="Username" aria-describedby="basic-addon1">
+                </div>
+            </div>
+            <div class="modal-footer modal-footer-customize">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+              <button type="button" class="btn btn-primary saveCustomize">Сохранить</button>
+            </div>
+          </div>
+        </div>
+    </div>
+    <canvas id="ctx"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@latest/dist/Chart.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        function loadElement(data){
+            for (let i=0; i < data.ids.length; i++){
+                const customizeBtn = `<button type="button" class="btn btn-primary customizeBtn customizeBtn${data.app_table_ids[i]}" data-bs-toggle="modal" data-bs-target="#customize">Изменить</button>`
+                document.querySelector('.table').insertAdjacentHTML("beforeend", `
+                <tr>
+                <th scope="row">${data.app_table_ids[i]}</th>
+                <td>${data.names[i]}</td>
+                <td>${data.ids[i]}</td>
+                <td>${data.policy_ids[i]}</td>
+                <td>
+                    ${customizeBtn}
+                </td>   
+                </tr>
+                `)
+            }
+        }
+        function loadData(){
+            fetch('http://checkstatus.website:8099/Face/App_List', {
+            method: 'POST',
+            headers: {
+                'Host': 'checkstatus.website:8099',
+                'Content-Type': 'application/json; charset=utf-8',
+                'Content-Length': '2'
+            },
+                body: "''"
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                loadElement(data);
+                let customizeBtns = document.querySelectorAll('.customizeBtn');
+                customizeBtns.forEach(elem => {
+                    elem.addEventListener('click', () => {
+                        const num = data.names.indexOf(elem.parentElement.parentElement.querySelector('th').nextElementSibling.textContent);
+                        document.querySelector('#customizeID').nextElementSibling.placeholder = data.ids[num];
+                    });
+                });
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+            });
+
+        }
+        loadData();
+        document.querySelector('.saveCustomize').addEventListener('click', () => {
+            const name = document.querySelector('.customizeName').value;
+            const polityce = +document.querySelector('.customizePolicy').value;
+            const alias = document.querySelector('.customizeID').placeholder;
+
+            const newData = `{"app_id": "${alias}", "app_name": "${name}", "policy_id": ${polityce}, "agent_js_config": "123123", "correlations_config": "321321"}`;
+          
+            fetch('http://checkstatus.website:8099/Face/Update_app', {
+                method: 'POST',
+                headers: {
+                    'Host': 'checkstatus.website:8099',
+                    'Content-Type': 'application/json; charset=utf-8',
+                    'Content-Length': JSON.stringify(newData).length.toString()
+                },
+                body: JSON.stringify(newData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                if (data.error == 0){
+                    const apps = document.querySelectorAll('tr');
+                    apps.forEach((elem, index) => {
+                        if (index != 0){
+                            elem.remove();
+                        }
+                    });
+                    loadData();
+                    document.querySelector('.closeCustomize').click();
+                    document.querySelector('.customizeName').value = "";
+                    document.querySelector('.customizePolicy').value = "";
+
+                }else{
+                    document.querySelector('.modal-footer-customize').insertAdjacentHTML("afterbegin", `
+                        <br/>
+                        <p style="color: red">Произошла ошибка</p>
+                    `)
+                }
+                
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+            });
+        });
+        document.querySelector('.newSave').addEventListener('click', () => {
+            const name = document.querySelector('.newName').value;
+            const polityce = +document.querySelector('.newPolicy').value;
+            const alias = document.querySelector('.newID').value;
+            let newData = `{"app_id": "${alias}", "app_name": "${name}", "policy_id": ${polityce}, "agent_js_config": "123123", "correlations_config": "321321"}`;
+            console.log(newData);
+            fetch('http://checkstatus.website:8099/Face/New_app', {
+                method: 'POST',
+                headers: {
+                    'Host': 'checkstatus.website:8099',
+                    'Content-Type': 'application/json; charset=utf-8',
+                    'Content-Length': JSON.stringify(newData).length.toString()
+                },
+                body: JSON.stringify(newData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                if (data.error == 0){
+                    const apps = document.querySelectorAll('tr');
+                    apps.forEach((elem, index) => {
+                        if (index != 0){
+                            elem.remove();
+                        }
+                    });
+                    loadData();
+                    document.querySelector('.sloseNew').click();
+                    document.querySelector('.newName').value = "";
+                    document.querySelector('.newPolicy').value = "";
+                    document.querySelector('.newID').value = "";
+
+                }else{
+                    document.querySelector('.modal-footer-new').insertAdjacentHTML("afterbegin", `
+                        <br/>
+                        <p style="color: red">Произошла ошибка</p>
+                    `)
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+            });
+        });
+
+        function diagramm(){
+            const ctx = document.getElementById("ctx").getContext('2d');
+            const myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ["18:18","","","","","","","","","","","","","","","","","","18:36","","","","","","","","","","","","","","","","","","18:54","","","","","","","","","","","","","","","","","","19:12","","","","","","","","","","","","","","","","","","19:30","","","","","","","","","","","","","","","","","","19:48","","","","","","","","","","","","","","","","","","20:06","","","","","","",""],
+                    datasets: [{
+                        label: 'Employee',
+                        backgroundColor: "#caf270",
+                        data: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,200,200,300,320,320,150,200,100,320,150,300,300,100,300,230,300,190,0,0,0,0,0,0,0,0],
+                    }, {
+                        label: 'Engineer',
+                        backgroundColor: "#45c490",
+                        data: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,200,200,100,120,120,150,150,200,160,250,300,200,300,300,230,230,190,0,0,0,0,0,0,0,0],
+                    }, {
+                        label: 'Government',
+                        backgroundColor: "#008d93",
+                        data: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,200,200,200,230,220,230,250,200,260,250,200,200,200,300,230,600,190,0,0,0,0,0,0,0,0],
+                    }],
+                },
+                options: {
+                    title: {
+                        display: true,
+                        text: 'Перехваченные запросы',
+                    },
+                    tooltips: {
+                    displayColors: true,
+                    callbacks:{
+                        mode: 'x',
+                    },
+                    },
+                    scales: {
+                    xAxes: [{
+                        stacked: true,
+                        gridLines: {
+                        display: true,
+                        }
+                    }],
+                    yAxes: [{
+                        stacked: true,
+                        gridLines:{
+                            display: false,
+                        },
+                        ticks: {
+                        beginAtZero: true,
+                        },
+                        type: 'linear',
+                    }]
+                    },
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        aspectRatio:4/1,
+                        legend: null,
+                    },
+                    
+                });
+        }
+        diagramm();
+    });
+    </script>
+</body>
+</html>
